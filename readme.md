@@ -10,8 +10,8 @@ https://github.com/JanaLipkova/GliomaSolver
 ```
 
 ## How to use it?
-TODO
-
+- set the paths in "main_LMI_inference.py"
+- run "main_LMI_inference.py"
 
 ## References
 
