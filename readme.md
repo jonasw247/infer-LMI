@@ -13,7 +13,7 @@ https://github.com/JanaLipkova/GliomaSolver
 TODO
 
 
-## Bib
+## References
 
 [1] Ezhov, Ivan, et al. "Learn-Morph-Infer: a new way of solving the inverse problem for brain tumor modeling." Medical Image Analysis 83 (2023): 102672.
 
