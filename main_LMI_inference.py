@@ -27,18 +27,18 @@ resultPath = 'results/' + str(patientNumber) + '/'
 #############################################################
 
 os.makedirs(resultPath, exist_ok=True)
-
-#%% register to correct 128 file
 patientWMNib = nib.load(wmSegmentationNiiPath)
-patientWM = patientWMNib.get_fdata()	
-patientWMAffine = patientWMNib.affine
 
 patientFlair = nib.load(flairSegmentationNiiPath).get_fdata()
 if len(patientFlair.shape) == 4:
     patientFlair = patientFlair[:,:,:,0]
-patientT1 = nib.load(flairSegmentationNiiPath).get_fdata()
+patientT1 = nib.load(t1SegmentationNiiPath).get_fdata()
 if len(patientT1.shape) == 4:
     patientT1 = patientT1[:,:,:,0]
+
+#%% register to correct 128 file
+patientWM = patientWMNib.get_fdata()	
+patientWMAffine = patientWMNib.affine
 
 wmTransformed, transformedTumor, registration = tools.getAtlasSpaceLMI_InputArray(patientWM, patientFlair, patientT1, atlasPath, getAlsoWMTrafo=True)
 
