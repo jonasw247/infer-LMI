@@ -9,10 +9,10 @@ from simulator import runForwardSolver
 
 
 #%% run LMI WM is needed for registration
-def runLMI(patientWM, patientFlair, patientT1):
+def runLMI(registrationReference, patientFlair, patientT1, registrationMode = "WM"):
     atlasPath = "./Atlasfiles"
 
-    wmTransformed, transformedTumor, registration = tools.getAtlasSpaceLMI_InputArray(patientWM, patientFlair, patientT1, atlasPath, getAlsoWMTrafo=True)
+    wmTransformed, transformedTumor, registration = tools.getAtlasSpaceLMI_InputArray(registrationReference, patientFlair, patientT1, atlasPath, getAlsoWMTrafo=True)
 
     #%% get the LMI prediction
     prediction = np.array(tools.getNetworkPrediction(transformedTumor))[:6]
@@ -27,17 +27,17 @@ def runLMI(patientWM, patientFlair, patientT1):
 
     parameterDir = {'D': prediction[0], 'rho': prediction[1], 'T': prediction[2], 'x': prediction[3], 'y': prediction[4], 'z': prediction[5]}
 
-    #%% run model with the given parameters
+    # run model with the given parameters
     brainPath = os.path.abspath('./simulator/brain')
     absPath = os.path.abspath(atlasPath + '/anatomy_dat/') + '/' # the "/"c is crucial for the solver
     tumor = runForwardSolver.run(absPath, prediction, brainPath)
     np.save('tumor.npy', tumor)
 
-    # %% register back to patient space
+    # register back to patient space
+    predictedTumorPatientSpace = tools.convertTumorToPatientSpace(tumor, registrationReference, registration)
+    referenceBackTransformed = tools.convertTumorToPatientSpace(wmTransformed, registrationReference, registration)
 
-    predictedTumorPatientSpace = tools.convertTumorToPatientSpace(tumor, patientWM, registration)
-
-    return predictedTumorPatientSpace, parameterDir
+    return predictedTumorPatientSpace, parameterDir, referenceBackTransformed
 
 if __name__ == "__main__":
     patientNumber = 1
@@ -67,8 +67,10 @@ if __name__ == "__main__":
     patientWMAffine = patientWMNib.affine
 
 
-    predictedTumorPatientSpace, parameterDir = runLMI(patientWM, patientFlair, patientT1)
+    predictedTumorPatientSpace, parameterDir, wmBackTransformed = runLMI(patientWM, patientFlair, patientT1)
 
     np.save(resultPath+'lmi_parameters.npy', parameterDir)
 
     nib.save(nib.Nifti1Image(predictedTumorPatientSpace, patientWMAffine), resultPath+'lmi_tumor_patientSpace.nii')
+
+    nib.save(nib.Nifti1Image(wmBackTransformed, patientWMAffine), resultPath+'lmi_wm_patientSpace.nii')
