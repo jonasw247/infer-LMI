@@ -377,15 +377,15 @@ def getAtlasSpaceLMI_InputArray(registrationReference, flairSeg, T1Seg, atlasPat
         raise Exception("registration mode not known")
     
     #masks... 
-    #atlasallTissue =1.0* np.load(atlasPath+'/anatomy/npzstuffData_0001.npz')["data"][:,:,:,1]
-    #atlasallTissue[atlasallTissue > 0.0001] = 1.0
-    #atlasallTissue[atlasallTissue < 0.0001] = 0.0
-    #mask = ants.from_numpy(atlasallTissue)
-    #movingMask = ants.from_numpy(1.0 * np.invert(antsFlairPatient.numpy()>0))
+    atlasallTissue =1.0* np.load(atlasPath+'/anatomy/npzstuffData_0001.npz')["data"][:,:,:,1]
+    atlasallTissue[atlasallTissue > 0.0001] = 1.0
+    atlasallTissue[atlasallTissue < 0.0001] = 0.0
+    mask = ants.from_numpy(atlasallTissue)
+    movingMask = ants.from_numpy(1.0 * np.invert(antsFlairPatient.numpy()>0))
 
     targetRegistration = ants.from_numpy(atlasImg)
     
-    reg =  ants.registration( targetRegistration, antsWMPatient, type_of_transform='SyNCC')#, mask=mask, moving_mask=movingMask)
+    reg =  ants.registration( targetRegistration, antsWMPatient, type_of_transform='SyNCC',random_seed = 42, mask=mask, moving_mask=movingMask)#)#type_of_transform='SyNCC'
 
     wmPatientTransformed = ants.apply_transforms(targetRegistration, antsWMPatient, reg['fwdtransforms'])
 
