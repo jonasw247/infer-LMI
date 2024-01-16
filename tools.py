@@ -365,29 +365,37 @@ def getAtlasSpaceLMI_InputArray(registrationReference, flairSeg, T1Seg, atlasPat
     print("start forward registration")
 
     #LMI works on Atlas where axis 1 is flipped
-    antsWMPatient = ants.from_numpy(np.flip(registrationReference, axis=1))
+    antsPatientReference = ants.from_numpy(np.flip(registrationReference, axis=1))
     antsFlairPatient = ants.from_numpy(np.flip(flairSeg, axis=1))
     antsT1Patient = ants.from_numpy(np.flip(T1Seg, axis=1))
 
     if registrationMode == "WM": #register only with WM
         atlasImg = np.load(atlasPath+'/anatomy/npzstuffData_0001.npz')["data"][:,:,:,2]
+        atlasallTissue =1.0* np.load(atlasPath+'/anatomy/npzstuffData_0001.npz')["data"][:,:,:,1]
+        atlasallTissue[atlasallTissue > 0.0001] = 1.0
+        atlasallTissue[atlasallTissue < 0.0001] = 0.0
+
     elif registrationMode == "WM_GM": # register with WM and GM
         atlasImg = np.load(atlasPath+'/anatomy/npzstuffData_0001.npz')["data"][:,:,:,1]
+        atlasallTissue =1.0* np.load(atlasPath+'/anatomy/npzstuffData_0001.npz')["data"][:,:,:,1]
+        atlasallTissue[atlasallTissue > 0.0001] = 1.0
+        atlasallTissue[atlasallTissue < 0.0001] = 0.0
+
+    elif registrationMode == "t1":
+        atlasImg = nib.load(atlasPath+'/modalities/atlas_small.nii.gz').get_fdata()[:,:,:,0]
+        atlasallTissue = nib.load(atlasPath+'/modalities/atlas_small_mask.nii.gz').get_fdata()[:,:,:,0]
     else:
         raise Exception("registration mode not known")
     
-    #masks... 
-    atlasallTissue =1.0* np.load(atlasPath+'/anatomy/npzstuffData_0001.npz')["data"][:,:,:,1]
-    atlasallTissue[atlasallTissue > 0.0001] = 1.0
-    atlasallTissue[atlasallTissue < 0.0001] = 0.0
     mask = ants.from_numpy(atlasallTissue)
-    movingMask = ants.from_numpy(1.0 * np.invert(antsFlairPatient.numpy()>0))
+
+    #movingMask = ants.from_numpy(1.0 * np.invert(antsFlairPatient.numpy()>0))
 
     targetRegistration = ants.from_numpy(atlasImg)
     
-    reg =  ants.registration( targetRegistration, antsWMPatient, type_of_transform='SyNCC',random_seed = 42, mask=mask, moving_mask=movingMask)#)#type_of_transform='SyNCC'
+    reg =  ants.registration( targetRegistration, antsPatientReference, type_of_transform='SyNCC',random_seed = 42, mask=mask)#, moving_mask=movingMask)#)#type_of_transform='SyNCC'
 
-    wmPatientTransformed = ants.apply_transforms(targetRegistration, antsWMPatient, reg['fwdtransforms'])
+    wmPatientTransformed = ants.apply_transforms(targetRegistration, antsPatientReference, reg['fwdtransforms'])
 
     flairTransformed = ants.apply_transforms(targetRegistration, antsFlairPatient, reg['fwdtransforms'], interpolator='nearestNeighbor')
     t1Transformed = ants.apply_transforms(targetRegistration, antsT1Patient, reg['fwdtransforms'], interpolator='nearestNeighbor')
