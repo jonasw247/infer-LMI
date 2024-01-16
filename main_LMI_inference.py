@@ -12,7 +12,7 @@ from simulator import runForwardSolver
 def runLMI(registrationReference, patientFlair, patientT1, registrationMode = "WM"):
     atlasPath = "./Atlasfiles"
 
-    wmTransformed, transformedTumor, registration = tools.getAtlasSpaceLMI_InputArray(registrationReference, patientFlair, patientT1, atlasPath, getAlsoWMTrafo=True)
+    wmTransformed, transformedTumor, registration = tools.getAtlasSpaceLMI_InputArray(registrationReference, patientFlair, patientT1, atlasPath, getAlsoWMTrafo=True, registrationMode = registrationMode)
 
     #%% get the LMI prediction
     prediction = np.array(tools.getNetworkPrediction(transformedTumor))[:6]
