@@ -393,7 +393,12 @@ def getAtlasSpaceLMI_InputArray(registrationReference, flairSeg, T1Seg, atlasPat
 
     targetRegistration = ants.from_numpy(atlasImg)
     
-    reg =  ants.registration( targetRegistration, antsPatientReference, type_of_transform='SyNCC',random_seed = 42, mask=mask)#, moving_mask=movingMask)#)#type_of_transform='SyNCC'
+    reg =  ants.registration( targetRegistration, antsPatientReference, type_of_transform='SyN',random_seed = 42, mask=mask, grad_step=0.2, 
+    flow_sigma=3, 
+    total_sigma=0,
+    verbose=True)#, moving_mask=movingMask)#)#type_of_transform='SyNCC'
+    #'syn' for newVersion2
+    #'synRA' for newVersion3
 
     wmPatientTransformed = ants.apply_transforms(targetRegistration, antsPatientReference, reg['fwdtransforms'])
 
