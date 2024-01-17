@@ -16,7 +16,7 @@ def runForPatient(pat):
     print("patient number: ", patientNumber)
 
     patientPath = "/mnt/8tb_slot8/jonas/datasets/ReSPOND/respond/respond_tum_"+ patientNumber+"/d0/"
-    resultPath = '/mnt/8tb_slot8/jonas/workingDirDatasets/ReSPOND/resultsLMI-inferNewVersion2/' + str(patientNumber) + '/'
+    resultPath = '/mnt/8tb_slot8/jonas/workingDirDatasets/ReSPOND/resultsLMI-inferNewVersion4/' + str(patientNumber) + '/'
 
     # read segmentation
     segmentationNiiPath = patientPath + "sub-respond_tum_"+ patientNumber+"_ses-d0_space-sri_seg.nii.gz"
@@ -61,9 +61,10 @@ def runForPatient(pat):
     nib.save(nib.Nifti1Image(predictedTumorPatientSpace, patientAffine), resultPath+'lmi_tumor_patientSpace.nii.gz')
     nib.save(nib.Nifti1Image(referenceBackTransformed, patientAffine), resultPath+'lmi_referenceBackTransformed_patientSpace.nii.gz')
 #%%
-runForPatient(4)
+#runForPatient(15)
 
 # %%
+
 for i in range(0, 170):
     try:
         runForPatient(i)
@@ -71,4 +72,5 @@ for i in range(0, 170):
     except Exception as e:
         print("error for patient ", i)
         print(e)
+
 # %%

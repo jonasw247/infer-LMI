@@ -13,6 +13,20 @@ def runLMI(registrationReference, patientFlair, patientT1, registrationMode = "W
     atlasPath = "./Atlasfiles"
 
     wmTransformed, transformedTumor, registration = tools.getAtlasSpaceLMI_InputArray(registrationReference, patientFlair, patientT1, atlasPath, getAlsoWMTrafo=True, registrationMode = registrationMode)
+    
+    referenceBackTransformed = tools.convertTumorToPatientSpace(wmTransformed, registrationReference, registration)
+
+    # Calculate the metric (e.g., Mean Squares)
+    metric_value = np.mean(np.abs(referenceBackTransformed / np.mean(referenceBackTransformed) -registrationReference / np.mean(registrationReference)))
+    # if not goodredo with different settings
+    if metric_value > 0.15:
+        wmTransformed, transformedTumor, registration = tools.getAtlasSpaceLMI_InputArray(registrationReference, patientFlair, patientT1, atlasPath, getAlsoWMTrafo=True, registrationMode = registrationMode, antsregistrationMode = "SyNCC")
+    
+        referenceBackTransformed = tools.convertTumorToPatientSpace(wmTransformed, registrationReference, registration)
+
+    metric_value = np.mean(np.abs(referenceBackTransformed / np.mean(referenceBackTransformed) -registrationReference / np.mean(registrationReference)))
+
+    print("Registration Loss (Metric Value):", metric_value)
 
     #%% get the LMI prediction
     prediction = np.array(tools.getNetworkPrediction(transformedTumor))[:6]
@@ -35,7 +49,6 @@ def runLMI(registrationReference, patientFlair, patientT1, registrationMode = "W
 
     # register back to patient space
     predictedTumorPatientSpace = tools.convertTumorToPatientSpace(tumor, registrationReference, registration)
-    referenceBackTransformed = tools.convertTumorToPatientSpace(wmTransformed, registrationReference, registration)
 
     return predictedTumorPatientSpace, parameterDir, referenceBackTransformed
 

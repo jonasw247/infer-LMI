@@ -361,7 +361,7 @@ def convert(mu1, mu2, x, y, z, selectedTEnd = 100):
 
 
 # register the pateints WM onto the atlas WM
-def getAtlasSpaceLMI_InputArray(registrationReference, flairSeg, T1Seg, atlasPath, getAlsoWMTrafo = False, registrationMode = "WM"):
+def getAtlasSpaceLMI_InputArray(registrationReference, flairSeg, T1Seg, atlasPath, getAlsoWMTrafo = False, registrationMode = "WM", antsregistrationMode = "SyN"):
     print("start forward registration")
 
     #LMI works on Atlas where axis 1 is flipped
@@ -393,12 +393,15 @@ def getAtlasSpaceLMI_InputArray(registrationReference, flairSeg, T1Seg, atlasPat
 
     targetRegistration = ants.from_numpy(atlasImg)
     
-    reg =  ants.registration( targetRegistration, antsPatientReference, type_of_transform='SyN',random_seed = 42, mask=mask, grad_step=0.2, 
+    reg =  ants.registration( targetRegistration, antsPatientReference, type_of_transform=antsregistrationMode,random_seed = 42, mask=mask, grad_step=0.2, 
     flow_sigma=3, 
     total_sigma=0,
-    verbose=True)#, moving_mask=movingMask)#)#type_of_transform='SyNCC'
+    verbose=False)#, moving_mask=movingMask)#)#type_of_transform='SyNCC'
     #'syn' for newVersion2
     #'synRA' for newVersion3
+    # Syn and if not working SyNCC for newVersion4
+
+
 
     wmPatientTransformed = ants.apply_transforms(targetRegistration, antsPatientReference, reg['fwdtransforms'])
 
